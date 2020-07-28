@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:summy/patter_lock.dart';
+import 'package:summy/buttons.dart';
 
 class SetPattern extends StatefulWidget {
   @override
@@ -23,7 +23,7 @@ class _SetPatternState extends State<SetPattern> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           Flexible(
-            child: PatternLock(
+            child: Buttons(
               selectedColor: Colors.amber,
               dimension: 3,
               pointRadius: 10,

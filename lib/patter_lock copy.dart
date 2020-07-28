@@ -4,7 +4,11 @@ import 'dart:math' as Math;
 import 'package:summy/dr.dart';
 
 Offset calcCirclePosition(
-    int n, Size size, int dimension, double relativePadding) {
+  int n,
+  Size size,
+  int dimension,
+  double relativePadding,
+) {
   final o = size.width > size.height
       ? Offset((size.width - size.height) / 2, 0)
       : Offset(0, (size.height - size.width) / 2);
@@ -163,12 +167,16 @@ class _LockPainter extends CustomPainter {
     paint.color = Colors.red;
 
     Path ex = PolygonPathDrawer(
-      size: Size(45, 45),
-      centralPoint: Offset(100, 100),
+      size: Size(80, 80),
+      // centralPoint: Offset(100, 100),
       specs: PolygonPathSpecs(sides: 6, rotate: 0, borderRadiusAngle: 10),
     ).draw();
 
+    Path ann = createHexagonPath(centralPoint: Offset(100, 300), radius: 45);
+
+    canvas.drawColor(Colors.green, BlendMode.clear);
     canvas.drawPath(ex, paint);
+    canvas.drawPath(ann, paint..color = Colors.green);
     return;
 
     Offset circlePosition(int n) =>
@@ -205,11 +213,11 @@ class _LockPainter extends CustomPainter {
     }
   }
 
-  Path createHexagonPath({double size, Offset centralPoint}) {
+  Path createHexagonPath({double radius, Offset centralPoint}) {
     final path = Path();
     double angle = (Math.pi * 2) / 6;
 
-    Offset firstPoint = Offset(size * Math.cos(0.0), size * Math.sin(0.0));
+    Offset firstPoint = Offset(radius * Math.cos(0.0), radius * Math.sin(0.0));
 
     path.moveTo(
       firstPoint.dx + centralPoint.dx,
@@ -217,8 +225,8 @@ class _LockPainter extends CustomPainter {
     );
 
     for (int i = 1; i <= 6; i++) {
-      double x = size * Math.cos(angle * i) + centralPoint.dx;
-      double y = size * Math.sin(angle * i) + centralPoint.dy;
+      double x = radius * Math.cos(angle * i) + centralPoint.dx;
+      double y = radius * Math.sin(angle * i) + centralPoint.dy;
       path.lineTo(x, y);
       // path.arcToPoint(Offset(0, 0), radius: Radius.circular(1));
     }
