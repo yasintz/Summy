@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:summy/buttons.dart';
+import 'package:summy/constants.dart';
+import 'package:summy/utils/responsive.dart';
 
 class SetPattern extends StatefulWidget {
   @override
@@ -16,21 +18,28 @@ class _SetPatternState extends State<SetPattern> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      appBar: AppBar(
-        title: Text("Check Pattern"),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          Flexible(
-            child: Buttons(
-              selectedColor: Colors.amber,
-              dimension: 3,
-              pointRadius: 10,
-              onInputComplete: (List<int> input) {},
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            Container(
+              width: Responsive.width(100, context),
+              height:
+                  Responsive.height(CONSTANTS.PART_OF_UPSIDE_HEIGHT, context),
+              color: Colors.yellowAccent,
             ),
-          ),
-        ],
+            Expanded(
+              child: Container(
+                color: Colors.green,
+                child: Buttons(
+                  selectedColor: Colors.amber,
+                  dimension: 3,
+                  pointRadius: 10,
+                  onInputComplete: (List<int> input) {},
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

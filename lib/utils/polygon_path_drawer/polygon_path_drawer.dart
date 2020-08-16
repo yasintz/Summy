@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class PolygonPathDrawer {
   final Path path;
-  final Size polygonSize;
+  final double polygonSize;
   final PolygonPathSpecs specs;
   final Offset centralPoint;
 
@@ -16,7 +16,7 @@ class PolygonPathDrawer {
   }) : path = Path();
 
   List<Offset> getPoints() {
-    final List<Offset> points = new List<Offset>(specs.sides);
+    final List<Offset> points = new List<Offset>();
 
     final anglePerSide = 360 / specs.sides;
 
@@ -55,7 +55,7 @@ class PolygonPathDrawer {
   }
 
   double get _radius {
-    return (polygonSize.width - specs.borderRadiusAngle) / 2;
+    return (polygonSize - specs.borderRadiusAngle) / 2;
   }
 
   Offset _getLinePoint(
@@ -137,6 +137,8 @@ class PolygonPathDrawer {
     }
     return centralPoint;
   }
+
+  void setCentralPoint(Offset point) {}
 }
 
 class PolygonPathSpecs {

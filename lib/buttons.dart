@@ -1,25 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:summy/constants.dart';
 import 'package:summy/utils/polygon_path_drawer/polygon_path_drawer.dart';
-
-Offset calcCirclePosition(
-  int n,
-  Size size,
-  int dimension,
-  double relativePadding,
-) {
-  final o = size.width > size.height
-      ? Offset((size.width - size.height) / 2, 0)
-      : Offset(0, (size.height - size.width) / 2);
-  return o +
-      Offset(
-        size.shortestSide /
-            (dimension - 1 + relativePadding * 2) *
-            (n % dimension + relativePadding),
-        size.shortestSide /
-            (dimension - 1 + relativePadding * 2) *
-            (n ~/ dimension + relativePadding),
-      );
-}
 
 class Buttons extends StatefulWidget {
   final int dimension;
@@ -76,37 +57,6 @@ class _ButtonsState extends State<Buttons> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanEnd: (DragEndDetails details) {
-        if (used.isNotEmpty) {
-          widget.onInputComplete(used);
-        }
-        setState(() {
-          used = [];
-          currentPoint = null;
-        });
-      },
-      onPanUpdate: (DragUpdateDetails details) {
-        RenderBox referenceBox = context.findRenderObject();
-        Offset localPosition =
-            referenceBox.globalToLocal(details.globalPosition);
-
-        Offset circlePosition(int n) => calcCirclePosition(
-              n,
-              referenceBox.size,
-              widget.dimension,
-              widget.relativePadding,
-            );
-
-        setState(() {
-          currentPoint = localPosition;
-          for (int i = 0; i < widget.dimension * widget.dimension; ++i) {
-            final toPoint = (circlePosition(i) - localPosition).distance;
-            if (!used.contains(i) && toPoint < widget.selectThreshold) {
-              used.add(i);
-            }
-          }
-        });
-      },
       child: CustomPaint(
         painter: _ButtonPainter(
           dimension: widget.dimension,
@@ -161,15 +111,43 @@ class _ButtonPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint();
-    paint.color = Colors.red;
+    List<Offset> points = this._getPoints(size);
+
+    List<PolygonPathDrawer> hexagons = points
+        .map((e) => PolygonPathDrawer(
+              centralPoint: e,
+              polygonSize: CONSTANTS.HEXAGON_BUTTON_SIZE,
+              specs: PolygonPathSpecs(
+                sides: 6,
+                borderRadiusAngle: 8,
+                rotate: 0,
+              ),
+            ))
+        .toList();
+
+    hexagons.forEach((element) {
+      canvas.drawPath(element.draw(), Paint()..color = Colors.redAccent);
+    });
+  }
+
+  List<Offset> _getPoints(Size size) {
+    double octagonSize = size.width -
+        CONSTANTS.HEXAGON_BUTTON_SIZE -
+        CONSTANTS.BUTTONS_HORIZONTAL_PADDING * 2;
 
     PolygonPathDrawer octagon = PolygonPathDrawer(
-      polygonSize: Size(size.width, size.width),
+      centralPoint: Offset(
+        size.width / 2,
+        size.height -
+            octagonSize / 2 -
+            CONSTANTS.HEXAGON_BUTTON_SIZE / 2 -
+            CONSTANTS.BUTTONS_VERTICAL_PADDING,
+      ),
+      polygonSize: octagonSize,
       specs: PolygonPathSpecs(sides: 8, rotate: 0, borderRadiusAngle: 0),
     );
 
-    canvas.drawPath(octagon.draw(), paint);
+    return octagon.getPoints();
   }
 
   @override
