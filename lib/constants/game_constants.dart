@@ -1,4 +1,4 @@
-class CONSTANTS {
+class GAME_CONSTANTS {
   static final double BUTTONS_VERTICAL_PADDING = 28;
   static final double BUTTONS_HORIZONTAL_PADDING = 20;
   static final double HEXAGON_BUTTON_SIZE = 75;

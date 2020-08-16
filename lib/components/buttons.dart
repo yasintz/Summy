@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:summy/constants.dart';
+import 'package:summy/constants/game_constants.dart';
 import 'package:summy/utils/polygon_path_drawer/polygon_path_drawer.dart';
 
 class Buttons extends StatefulWidget {
@@ -116,7 +116,7 @@ class _ButtonPainter extends CustomPainter {
     List<PolygonPathDrawer> hexagons = points
         .map((e) => PolygonPathDrawer(
               centralPoint: e,
-              polygonSize: CONSTANTS.HEXAGON_BUTTON_SIZE,
+              polygonSize: GAME_CONSTANTS.HEXAGON_BUTTON_SIZE,
               specs: PolygonPathSpecs(
                 sides: 6,
                 borderRadiusAngle: 8,
@@ -132,16 +132,16 @@ class _ButtonPainter extends CustomPainter {
 
   List<Offset> _getPoints(Size size) {
     double octagonSize = size.width -
-        CONSTANTS.HEXAGON_BUTTON_SIZE -
-        CONSTANTS.BUTTONS_HORIZONTAL_PADDING * 2;
+        GAME_CONSTANTS.HEXAGON_BUTTON_SIZE -
+        GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING * 2;
 
     PolygonPathDrawer octagon = PolygonPathDrawer(
       centralPoint: Offset(
         size.width / 2,
         size.height -
             octagonSize / 2 -
-            CONSTANTS.HEXAGON_BUTTON_SIZE / 2 -
-            CONSTANTS.BUTTONS_VERTICAL_PADDING,
+            GAME_CONSTANTS.HEXAGON_BUTTON_SIZE / 2 -
+            GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
       ),
       polygonSize: octagonSize,
       specs: PolygonPathSpecs(sides: 8, rotate: 0, borderRadiusAngle: 0),

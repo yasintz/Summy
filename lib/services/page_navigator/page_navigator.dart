@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:summy/lib/page_navigator/route_animation.dart';
+import 'package:summy/services/page_navigator/route_animation.dart';
 import 'package:summy/routes.dart';
 
 Route _createRoute({
