@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as Math;
 // import 'package:summy/constants/game_constants.dart';
 import 'package:summy/utils/polygon_path_drawer/polygon_path_drawer.dart';
 
@@ -40,17 +41,31 @@ class ButtonsPainter extends CustomPainter {
         PolygonPathDrawer.getPolygonRadius(buttonSize, hexagonSpecs) * 2;
 
     double octagonSize = size.width - buttonSizeByRadius;
-
-    PolygonPathDrawer octagon = PolygonPathDrawer(
-      centralPoint: Offset(
-        size.width / 2,
-        size.height / 2,
-      ),
-      polygonSize: octagonSize,
-      specs: PolygonPathSpecs(sides: 8, rotate: 0, borderRadiusAngle: 0),
+    Offset centralPoint = Offset(
+      size.width / 2,
+      size.height / 2,
     );
 
-    return octagon.getPoints();
+    Offset _getOffset(double angle) {
+      double radius = octagonSize / 2;
+
+      final radian = (angle - 90) * (Math.pi / 180);
+      final x = Math.cos(radian) * radius + centralPoint.dx;
+      final y = Math.sin(radian) * radius + centralPoint.dy;
+
+      return Offset(x, y);
+    }
+
+    final List<Offset> points = new List<Offset>();
+
+    final anglePerSide = 360 / 8;
+
+    for (var i = 0; i <= 8; i++) {
+      double currentAngle = anglePerSide * i;
+      points.add(_getOffset(currentAngle));
+    }
+
+    return points;
   }
 
   @override
