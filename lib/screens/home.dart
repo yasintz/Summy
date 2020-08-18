@@ -10,14 +10,30 @@ class HomeScreen extends StatelessWidget {
     return PageWrapper(
       child: Container(
         child: Center(
-          child: FlatButton(
-            onPressed: () {
-              PageNavigator.of(context).push(
-                route: Routes.Game,
-                animation: RouteAnimation.SCALE,
-              );
-            },
-            child: Text("Go to Game"),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 250),
+            child: Column(
+              children: [
+                FlatButton(
+                  onPressed: () {
+                    PageNavigator.of(context).push(
+                      route: Routes.Game,
+                      animation: RouteAnimation.SCALE,
+                    );
+                  },
+                  child: Text("Go to Game"),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    PageNavigator.of(context).push(
+                      route: Routes.Settings,
+                      animation: RouteAnimation.SCALE,
+                    );
+                  },
+                  child: Text("Go to Settings"),
+                ),
+              ],
+            ),
           ),
         ),
       ),

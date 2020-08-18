@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:summy/components/buttons.dart';
+import 'package:summy/screens/game/buttons.dart';
 import 'package:summy/components/page_wrapper.dart';
 import 'package:summy/constants/game_constants.dart';
 import 'package:summy/utils/responsive.dart';
+
+import 'cp.dart';
 
 class GameScreen extends StatelessWidget {
   @override
@@ -22,12 +24,13 @@ class GameScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 color: Colors.green,
-                child: Buttons(
-                  selectedColor: Colors.amber,
-                  dimension: 3,
-                  pointRadius: 10,
-                  onInputComplete: (List<int> input) {},
-                ),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
+                      horizontal: GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING,
+                    ),
+                    // child: Buttons(),
+                    child: CustomP()),
               ),
             ),
           ],

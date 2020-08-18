@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:summy/constants/game_constants.dart';
-import 'package:summy/utils/polygon_path_drawer/polygon_path_drawer.dart';
 
-class Buttons extends StatefulWidget {
+Offset calcCirclePosition(
+    int n, Size size, int dimension, double relativePadding) {
+  final o = size.width > size.height
+      ? Offset((size.width - size.height) / 2, 0)
+      : Offset(0, (size.height - size.width) / 2);
+  return o +
+      Offset(
+        size.shortestSide /
+            (dimension - 1 + relativePadding * 2) *
+            (n % dimension + relativePadding),
+        size.shortestSide /
+            (dimension - 1 + relativePadding * 2) *
+            (n ~/ dimension + relativePadding),
+      );
+}
+
+class PatternLock extends StatefulWidget {
   final int dimension;
   final double relativePadding;
   final Color selectedColor;
@@ -13,7 +27,7 @@ class Buttons extends StatefulWidget {
   final bool fillPoints;
   final Function(List<int>) onInputComplete;
 
-  /// Creates [Buttons] with given params.
+  /// Creates [PatternLock] with given params.
   ///
   /// [dimension] count of points horizontally and vertically.
   /// [relativePadding] padding of points area relative to distance between points.
@@ -24,7 +38,7 @@ class Buttons extends StatefulWidget {
   /// [selectThreshold] needed distance from input to point to select point.
   /// [fillPoints] whether fill points.
   /// [onInputComplete] callback that called when user's input complete. Called if user selected one or more points.
-  const Buttons({
+  const PatternLock({
     Key key,
     this.dimension = 3,
     this.relativePadding = 0.7,
@@ -47,18 +61,49 @@ class Buttons extends StatefulWidget {
         super(key: key);
 
   @override
-  _ButtonsState createState() => _ButtonsState();
+  _PatternLockState createState() => _PatternLockState();
 }
 
-class _ButtonsState extends State<Buttons> {
+class _PatternLockState extends State<PatternLock> {
   List<int> used = [];
   Offset currentPoint;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onPanEnd: (DragEndDetails details) {
+        if (used.isNotEmpty) {
+          widget.onInputComplete(used);
+        }
+        setState(() {
+          used = [];
+          currentPoint = null;
+        });
+      },
+      onPanUpdate: (DragUpdateDetails details) {
+        RenderBox referenceBox = context.findRenderObject();
+        Offset localPosition =
+            referenceBox.globalToLocal(details.globalPosition);
+
+        Offset circlePosition(int n) => calcCirclePosition(
+              n,
+              referenceBox.size,
+              widget.dimension,
+              widget.relativePadding,
+            );
+
+        setState(() {
+          currentPoint = localPosition;
+          for (int i = 0; i < widget.dimension * widget.dimension; ++i) {
+            final toPoint = (circlePosition(i) - localPosition).distance;
+            if (!used.contains(i) && toPoint < widget.selectThreshold) {
+              used.add(i);
+            }
+          }
+        });
+      },
       child: CustomPaint(
-        painter: _ButtonPainter(
+        painter: _LockPainter(
           dimension: widget.dimension,
           used: used,
           currentPoint: currentPoint,
@@ -76,7 +121,7 @@ class _ButtonsState extends State<Buttons> {
 }
 
 @immutable
-class _ButtonPainter extends CustomPainter {
+class _LockPainter extends CustomPainter {
   final int dimension;
   final List<int> used;
   final Offset currentPoint;
@@ -89,7 +134,8 @@ class _ButtonPainter extends CustomPainter {
 
   final Paint circlePaint;
   final Paint selectedPaint;
-  _ButtonPainter({
+
+  _LockPainter({
     this.dimension,
     this.used,
     this.currentPoint,
@@ -111,43 +157,38 @@ class _ButtonPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    List<Offset> points = this._getPoints(size);
+    Offset circlePosition(int n) =>
+        calcCirclePosition(n, size, dimension, relativePadding);
 
-    List<PolygonPathDrawer> hexagons = points
-        .map((e) => PolygonPathDrawer(
-              centralPoint: e,
-              polygonSize: GAME_CONSTANTS.HEXAGON_BUTTON_SIZE,
-              specs: PolygonPathSpecs(
-                sides: 6,
-                borderRadiusAngle: 8,
-                rotate: 0,
-              ),
-            ))
-        .toList();
+    for (int i = 0; i < dimension; ++i) {
+      for (int j = 0; j < dimension; ++j) {
+        canvas.drawCircle(
+          circlePosition(i * dimension + j),
+          pointRadius,
+          showInput && used.contains(i * dimension + j)
+              ? selectedPaint
+              : circlePaint,
+        );
+      }
+    }
 
-    hexagons.forEach((element) {
-      canvas.drawPath(element.draw(), Paint()..color = Colors.redAccent);
-    });
-  }
+    if (showInput) {
+      for (int i = 0; i < used.length - 1; ++i) {
+        canvas.drawLine(
+          circlePosition(used[i]),
+          circlePosition(used[i + 1]),
+          selectedPaint,
+        );
+      }
 
-  List<Offset> _getPoints(Size size) {
-    double octagonSize = size.width -
-        GAME_CONSTANTS.HEXAGON_BUTTON_SIZE -
-        GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING * 2;
-
-    PolygonPathDrawer octagon = PolygonPathDrawer(
-      centralPoint: Offset(
-        size.width / 2,
-        size.height -
-            octagonSize / 2 -
-            GAME_CONSTANTS.HEXAGON_BUTTON_SIZE / 2 -
-            GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
-      ),
-      polygonSize: octagonSize,
-      specs: PolygonPathSpecs(sides: 8, rotate: 0, borderRadiusAngle: 0),
-    );
-
-    return octagon.getPoints();
+      if (used.isNotEmpty && currentPoint != null) {
+        canvas.drawLine(
+          circlePosition(used[used.length - 1]),
+          currentPoint,
+          selectedPaint,
+        );
+      }
+    }
   }
 
   @override

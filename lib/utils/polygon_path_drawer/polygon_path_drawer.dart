@@ -15,6 +15,10 @@ class PolygonPathDrawer {
     this.centralPoint,
   }) : path = Path();
 
+  static double getPolygonRadius(double polygonSize, PolygonPathSpecs specs) {
+    return (polygonSize - specs.borderRadiusAngle) / 2;
+  }
+
   List<Offset> getPoints() {
     final List<Offset> points = new List<Offset>();
 
@@ -55,7 +59,7 @@ class PolygonPathDrawer {
   }
 
   double get _radius {
-    return (polygonSize - specs.borderRadiusAngle) / 2;
+    return getPolygonRadius(polygonSize, specs);
   }
 
   Offset _getLinePoint(

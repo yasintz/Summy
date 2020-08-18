@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:summy/screens/game.dart';
+import 'package:summy/screens/game/game.dart';
 import 'package:summy/screens/home.dart';
 import 'package:summy/screens/settings.dart';
 
