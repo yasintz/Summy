@@ -13,43 +13,68 @@ class Buttons extends StatefulWidget {
 
 class _ButtonsState extends State<Buttons> {
   List<int> used = [];
+  Offset currentPoint;
 
   @override
   Widget build(BuildContext context) {
-    RenderBox referenceBox = context.findRenderObject();
-
     return GestureDetector(
       child: CustomPaint(
         painter: ButtonsPainter(
+          currentPoint: currentPoint,
           buttonSize: GAME_CONSTANTS.HEXAGON_BUTTON_SIZE,
           items: [
-            ButtonItem("1", false),
-            ButtonItem("2", false),
-            ButtonItem("3", false),
-            ButtonItem("4", false),
-            ButtonItem("5", false),
-            ButtonItem("6", false),
-            ButtonItem("7", false),
-            ButtonItem("8", false),
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
           ],
+          used: used,
         ),
         size: Size.infinite,
       ),
       onPanUpdate: (DragUpdateDetails details) {
-        Offset localPosition =
-            referenceBox.globalToLocal(details.globalPosition);
-
-        print(localPosition);
+        handleUsed(details.globalPosition);
       },
       onTapDown: (TapDownDetails details) {
-        Offset localPosition =
-            referenceBox.globalToLocal(details.globalPosition);
-
-        print(localPosition);
+        handleUsed(details.globalPosition);
       },
-      onPanEnd: (DragEndDetails details) {
-        print(used);
-      },
+      onPanEnd: onEnd,
+      onTapUp: onEnd,
     );
+  }
+
+  void onEnd(_) {
+    print(used);
+    setState(() {
+      currentPoint = null;
+      used = [];
+    });
+  }
+
+  void handleUsed(Offset globalPosition) {
+    RenderBox referenceBox = context.findRenderObject();
+
+    Offset localPosition = referenceBox.globalToLocal(globalPosition);
+
+    var points = ButtonsPainter.getPoints(referenceBox.size);
+    setState(() {
+      currentPoint = localPosition;
+
+      points.asMap().forEach((index, element) {
+        final distance = (element - localPosition).distance;
+
+        final isSelected = distance <
+            GAME_CONSTANTS.HEXAGON_BUTTON_SIZE +
+                GAME_CONSTANTS.BUTTON_STROKE_WIDTH;
+
+        if (!used.contains(index) && isSelected) {
+          used.add(index);
+        }
+      });
+    });
   }
 }

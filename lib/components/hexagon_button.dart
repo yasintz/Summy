@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as Math;
+
+import 'package:summy/constants/game_constants.dart';
 
 typedef DoubleUpdater = double Function(double x);
 
@@ -11,6 +12,7 @@ class HexagonButton {
   final String char;
   final Color color;
   final Color textColor;
+  List<Offset> _offsets;
 
   HexagonButton({
     @required this.centralPoint,
@@ -67,38 +69,48 @@ class HexagonButton {
     return textPainter;
   }
 
+  List<Offset> getOffsets() {
+    if (_offsets == null) {
+      List<Offset> points = List<Offset>();
+      double sl = sideLength - (strokeWidth / 2);
+      Offset defaultCentralPoint =
+          Offset(sl * GAME_CONSTANTS.ROOT_THREE / 2, sl);
+      double centralPointXDiff = centralPoint.dx - defaultCentralPoint.dx;
+      double centralPointYDiff = centralPoint.dy - defaultCentralPoint.dy;
+
+      DoubleUpdater xUpdater = (x) => (x) + centralPointXDiff;
+      DoubleUpdater yUpdater = (y) => (y) + centralPointYDiff;
+
+      List<Offset> offsets = [
+        Offset(0, sl / 2),
+        Offset(sl * GAME_CONSTANTS.ROOT_THREE / 2, 0),
+        Offset(sl * GAME_CONSTANTS.ROOT_THREE, sl / 2),
+        Offset(sl * GAME_CONSTANTS.ROOT_THREE, 3 * sl / 2),
+        Offset(sl * GAME_CONSTANTS.ROOT_THREE / 2, 2 * sl),
+        Offset(0, 3 * sl / 2)
+      ];
+
+      offsets.asMap()
+        ..forEach((key, value) {
+          Offset currentValue = Offset(xUpdater(value.dx), yUpdater(value.dy));
+          points.add(currentValue);
+        });
+
+      _offsets = points;
+    }
+
+    return _offsets;
+  }
+
   Path _getHexagonButtonPath() {
     // image: https://image.prntscr.com/image/lh7LI-xlSAmKzR_K87bzUw.png
     Path path = Path();
-    double rootThree = Math.sqrt(3);
 
-    double sl = sideLength - (strokeWidth / 2);
-    Offset defaultCentralPoint = Offset(sl * rootThree / 2, sl);
-    double centralPointXDiff = centralPoint.dx - defaultCentralPoint.dx;
-    double centralPointYDiff = centralPoint.dy - defaultCentralPoint.dy;
-
-    DoubleUpdater xUpdater = (x) => (x) + centralPointXDiff;
-    DoubleUpdater yUpdater = (y) => (y) + centralPointYDiff;
-
-    List<Offset> points = List<Offset>();
+    List<Offset> points = getOffsets();
     List<Offset> centeralPoints = List<Offset>();
 
-    List<Offset> offsets = [
-      Offset(0, sl / 2),
-      Offset(sl * rootThree / 2, 0),
-      Offset(sl * rootThree, sl / 2),
-      Offset(sl * rootThree, 3 * sl / 2),
-      Offset(sl * rootThree / 2, 2 * sl),
-      Offset(0, 3 * sl / 2)
-    ];
-
-    offsets.asMap()
-      ..forEach((key, value) {
-        Offset currentValue = Offset(xUpdater(value.dx), yUpdater(value.dy));
-        points.add(currentValue);
-      })
-      ..forEach((index, _) {
-        Offset value = points[index];
+    points.asMap()
+      ..forEach((index, value) {
         bool isLastPoint = index == points.length - 1;
 
         Offset nextItem = points[isLastPoint ? 0 : index + 1];

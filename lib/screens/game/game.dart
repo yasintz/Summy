@@ -18,24 +18,16 @@ class GameScreen extends StatelessWidget {
                 GAME_CONSTANTS.PART_OF_UPSIDE_HEIGHT,
                 context,
               ),
-              decoration: BoxDecoration(
-                color: HexColor("#faf9f7"),
-                border: Border(
-                  bottom: BorderSide(
-                    color: HexColor("#e8e6e1"),
-                    width: 1,
-                  ),
-                ),
-              ),
+              color: HexColor("#faf9f7"),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
-                  horizontal: GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING,
-                ),
-                child: Container(
-                  color: Colors.grey,
+              child: Container(
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
+                    horizontal: GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING,
+                  ),
                   child: Buttons(),
                 ),
               ),

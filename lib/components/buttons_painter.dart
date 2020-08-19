@@ -1,64 +1,150 @@
 import 'package:flutter/material.dart';
-import 'package:summy/components/hexagon_button.dart';
 import 'dart:math' as Math;
+import 'package:summy/components/hexagon_button.dart';
 
 import 'package:summy/constants/game_constants.dart';
 
 const int buttonCount = 8;
 
-class ButtonItem {
-  final String text;
-  final bool isSelected;
-
-  ButtonItem(this.text, this.isSelected);
-
-  ButtonItem update(bool selected) => ButtonItem(text, selected);
-}
-
+// TODO: optimize
 class ButtonsPainter extends CustomPainter {
   final double buttonSize;
-  final double strokeWidth = 4.0;
-  final double radius = 5.5;
-  final List<ButtonItem> items;
+  final List<String> items;
+  final Offset currentPoint;
+  final List<int> used;
+  final Paint selectedPaint;
 
   ButtonsPainter({
     @required this.buttonSize,
     @required this.items,
-  }) : assert(items.length == buttonCount);
+    @required this.used,
+    @required this.currentPoint,
+  })  : assert(items.length == buttonCount),
+        selectedPaint = Paint()
+          ..color = GAME_CONSTANTS.SELECTED_BUTTON_COLOR
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = GAME_CONSTANTS.BUTTON_STROKE_WIDTH;
 
   @override
   void paint(Canvas canvas, Size size) {
-    List<Offset> points = this._getPoints(size);
-
-    points
-        .asMap()
-        .map(
-          (index, e) => MapEntry(
-            index,
-            HexagonButton(
-              centralPoint: e,
-              sideLength: buttonSize,
-              strokeWidth: strokeWidth,
-              radius: radius,
-              char: items[index].text,
-              color: items[index].isSelected
-                  ? GAME_CONSTANTS.SELECTED_BUTTON_COLOR
-                  : GAME_CONSTANTS.NON_SELECTED_BUTTON_COLOR,
-              textColor: items[index].isSelected
-                  ? GAME_CONSTANTS.SELECTED_BUTTON_COLOR
-                  : GAME_CONSTANTS.TEXT_COLOR,
-            ),
+    var points = getPoints(size);
+    var pointsMap = points.asMap();
+    var hexagonButtonMap = pointsMap.map(
+      (index, e) {
+        final isSelected = used.contains(index);
+        return MapEntry(
+          index,
+          HexagonButton(
+            centralPoint: e,
+            sideLength: buttonSize,
+            strokeWidth: GAME_CONSTANTS.BUTTON_STROKE_WIDTH,
+            radius: GAME_CONSTANTS.BUTTON_RADIUS,
+            char: items[index],
+            color: isSelected
+                ? GAME_CONSTANTS.SELECTED_BUTTON_COLOR
+                : GAME_CONSTANTS.NON_SELECTED_BUTTON_COLOR,
+            textColor: isSelected
+                ? GAME_CONSTANTS.SELECTED_BUTTON_COLOR
+                : GAME_CONSTANTS.TEXT_COLOR,
           ),
-        )
-        .forEach(
+        );
+      },
+    );
+
+    hexagonButtonMap.forEach(
       (key, value) {
         value.paint(canvas, size);
       },
     );
+
+    for (int i = 0; i < used.length - 1; ++i) {
+      var p1 = points[used[i]];
+      var p2 = points[used[i + 1]];
+
+      var p1Offsets = hexagonButtonMap[used[i]].getOffsets();
+      var p2Offsets = hexagonButtonMap[used[i + 1]].getOffsets();
+
+      canvas.drawLine(
+        getStartOffset(p1, p2, p1Offsets),
+        getStartOffset(p2, p1, p2Offsets),
+        selectedPaint,
+      );
+    }
+
+    if (used.isNotEmpty && currentPoint != null && used.length < buttonCount) {
+      var lastItemIndex = used[used.length - 1];
+
+      var p1 = getStartOffset(
+        points[lastItemIndex],
+        currentPoint,
+        hexagonButtonMap[lastItemIndex].getOffsets(),
+      );
+
+      canvas.drawLine(
+        p1,
+        currentPoint,
+        selectedPaint,
+      );
+    }
   }
 
-  List<Offset> _getPoints(Size size) {
-    double octagonSize = size.width - ((buttonSize + strokeWidth) * 2);
+  Offset getStartOffset(Offset p1, Offset p2, List<Offset> points) {
+    Offset defaultValue = calcOffset(
+      p1,
+      p2,
+      GAME_CONSTANTS.HEXAGON_BUTTON_SIZE,
+    );
+
+    bool isEdge = false;
+    double distance = 0;
+
+    points.forEach(
+      (e) {
+        var _distance = (defaultValue - e).distance;
+        var _isEdge = _distance < 10;
+        isEdge = isEdge || _isEdge;
+        if (_isEdge) {
+          distance = _distance;
+        }
+      },
+    );
+
+    if (!isEdge) {
+      return calcOffset(
+          p1,
+          p2,
+          (GAME_CONSTANTS.HEXAGON_BUTTON_SIZE * GAME_CONSTANTS.ROOT_THREE / 2) +
+              GAME_CONSTANTS.BUTTON_STROKE_WIDTH / 4);
+    }
+
+    return calcOffset(
+      p1,
+      p2,
+      GAME_CONSTANTS.HEXAGON_BUTTON_SIZE - distance / 7,
+    );
+  }
+
+  Offset calcOffset(Offset p1, Offset p2, double baseR) {
+    double xLength = (p1.dx - p2.dx).abs();
+    double yLength = (p1.dy - p2.dy).abs();
+    double length = (p1 - p2).distance;
+
+    double r = baseR - GAME_CONSTANTS.BUTTON_STROKE_WIDTH / 2;
+
+    double x = r * xLength / length + (p1.dx < p2.dx ? p1.dx : -p1.dx);
+    double y = r * yLength / length + (p1.dy < p2.dy ? p1.dy : -p1.dy);
+
+    var offset = Offset(x.abs(), y.abs());
+
+    return offset;
+  }
+
+  static List<Offset> getPoints(Size size) {
+    double octagonSize = size.width -
+        ((GAME_CONSTANTS.HEXAGON_BUTTON_SIZE +
+                GAME_CONSTANTS.BUTTON_STROKE_WIDTH) *
+            2);
     Offset centralPoint = Offset(
       size.width / 2,
       size.height / 2,
