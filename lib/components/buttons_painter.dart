@@ -1,46 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:summy/components/hexagon_button.dart';
 import 'dart:math' as Math;
-// import 'package:summy/constants/game_constants.dart';
-import 'package:summy/utils/polygon_path_drawer/polygon_path_drawer.dart';
+
+import 'package:summy/constants/game_constants.dart';
+
+const int buttonCount = 8;
+
+class ButtonItem {
+  final String text;
+  final bool isSelected;
+
+  ButtonItem(this.text, this.isSelected);
+
+  ButtonItem update(bool selected) => ButtonItem(text, selected);
+}
 
 class ButtonsPainter extends CustomPainter {
   final double buttonSize;
+  final double strokeWidth = 4.0;
+  final double radius = 5.5;
+  final List<ButtonItem> items;
 
-  final PolygonPathSpecs hexagonSpecs = PolygonPathSpecs(
-    sides: 6,
-    borderRadiusAngle: 8,
-    rotate: 0,
-  );
-
-  ButtonsPainter({@required this.buttonSize});
+  ButtonsPainter({
+    @required this.buttonSize,
+    @required this.items,
+  }) : assert(items.length == buttonCount);
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Rect.fromLTRB(0, 0, size.width, size.height),
-      Paint()..color = Colors.purple,
-    );
-
     List<Offset> points = this._getPoints(size);
 
-    List<PolygonPathDrawer> hexagons = points
-        .map((e) => PolygonPathDrawer(
+    points
+        .asMap()
+        .map(
+          (index, e) => MapEntry(
+            index,
+            HexagonButton(
               centralPoint: e,
-              polygonSize: buttonSize,
-              specs: hexagonSpecs,
-            ))
-        .toList();
-
-    hexagons.forEach((element) {
-      canvas.drawPath(element.draw(), Paint()..color = Colors.redAccent);
-    });
+              sideLength: buttonSize,
+              strokeWidth: strokeWidth,
+              radius: radius,
+              char: items[index].text,
+              color: items[index].isSelected
+                  ? GAME_CONSTANTS.SELECTED_BUTTON_COLOR
+                  : GAME_CONSTANTS.NON_SELECTED_BUTTON_COLOR,
+              textColor: items[index].isSelected
+                  ? GAME_CONSTANTS.SELECTED_BUTTON_COLOR
+                  : GAME_CONSTANTS.TEXT_COLOR,
+            ),
+          ),
+        )
+        .forEach(
+      (key, value) {
+        value.paint(canvas, size);
+      },
+    );
   }
 
   List<Offset> _getPoints(Size size) {
-    double buttonSizeByRadius =
-        PolygonPathDrawer.getPolygonRadius(buttonSize, hexagonSpecs) * 2;
-
-    double octagonSize = size.width - buttonSizeByRadius;
+    double octagonSize = size.width - ((buttonSize + strokeWidth) * 2);
     Offset centralPoint = Offset(
       size.width / 2,
       size.height / 2,
@@ -58,9 +76,9 @@ class ButtonsPainter extends CustomPainter {
 
     final List<Offset> points = new List<Offset>();
 
-    final anglePerSide = 360 / 8;
+    final anglePerSide = 360 / buttonCount;
 
-    for (var i = 0; i <= 8; i++) {
+    for (var i = 0; i < buttonCount; i++) {
       double currentAngle = anglePerSide * i;
       points.add(_getOffset(currentAngle));
     }

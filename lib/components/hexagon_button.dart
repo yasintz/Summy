@@ -10,6 +10,7 @@ class HexagonButton {
   final double radius;
   final String char;
   final Color color;
+  final Color textColor;
 
   HexagonButton({
     @required this.centralPoint,
@@ -18,6 +19,7 @@ class HexagonButton {
     @required this.radius,
     @required this.char,
     @required this.color,
+    @required this.textColor,
   });
 
   void paint(Canvas canvas, Size size) {
@@ -39,7 +41,7 @@ class HexagonButton {
       canvas,
       Offset(
         // TODO: update after font
-        centralPoint.dx - 1 - textPainter.text.style.fontSize / 4,
+        centralPoint.dx - textPainter.text.style.fontSize / 4,
         centralPoint.dy - 2 - textPainter.text.style.fontSize / 2,
       ),
     );
@@ -49,11 +51,9 @@ class HexagonButton {
 
   TextPainter _getTextPainter() {
     TextStyle textStyle = TextStyle(
-      color: color,
+      color: textColor,
       fontSize: 32,
     );
-
-    print(textStyle.fontFamily);
 
     TextSpan textSpan = TextSpan(
       text: char,
@@ -72,23 +72,24 @@ class HexagonButton {
     Path path = Path();
     double rootThree = Math.sqrt(3);
 
-    Offset defaultCentralPoint = Offset(sideLength * rootThree / 2, sideLength);
+    double sl = sideLength - (strokeWidth / 2);
+    Offset defaultCentralPoint = Offset(sl * rootThree / 2, sl);
     double centralPointXDiff = centralPoint.dx - defaultCentralPoint.dx;
     double centralPointYDiff = centralPoint.dy - defaultCentralPoint.dy;
 
-    DoubleUpdater xUpdater = (x) => x + (strokeWidth / 2) + centralPointXDiff;
-    DoubleUpdater yUpdater = (y) => y + (strokeWidth / 2) + centralPointYDiff;
+    DoubleUpdater xUpdater = (x) => (x) + centralPointXDiff;
+    DoubleUpdater yUpdater = (y) => (y) + centralPointYDiff;
 
     List<Offset> points = List<Offset>();
     List<Offset> centeralPoints = List<Offset>();
 
     List<Offset> offsets = [
-      Offset(0, sideLength / 2),
-      Offset(sideLength * rootThree / 2, 0),
-      Offset(sideLength * rootThree, sideLength / 2),
-      Offset(sideLength * rootThree, 3 * sideLength / 2),
-      Offset(sideLength * rootThree / 2, 2 * sideLength),
-      Offset(0, 3 * sideLength / 2)
+      Offset(0, sl / 2),
+      Offset(sl * rootThree / 2, 0),
+      Offset(sl * rootThree, sl / 2),
+      Offset(sl * rootThree, 3 * sl / 2),
+      Offset(sl * rootThree / 2, 2 * sl),
+      Offset(0, 3 * sl / 2)
     ];
 
     offsets.asMap()
