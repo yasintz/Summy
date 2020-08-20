@@ -9,31 +9,29 @@ class GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PageWrapper(
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            Container(
-              width: Responsive.width(100, context),
-              height: Responsive.height(
-                GAME_CONSTANTS.PART_OF_UPSIDE_HEIGHT,
-                context,
-              ),
-              color: HexColor("#faf9f7"),
+      child: Column(
+        children: <Widget>[
+          Container(
+            width: Responsive.width(100, context),
+            height: Responsive.height(
+              GAME_CONSTANTS.PART_OF_UPSIDE_HEIGHT,
+              context,
             ),
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
-                    horizontal: GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING,
-                  ),
-                  child: Buttons(),
+            color: HexColor("#faf9f7"),
+          ),
+          Expanded(
+            child: Container(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: GAME_CONSTANTS.BUTTONS_VERTICAL_PADDING,
+                  horizontal: GAME_CONSTANTS.BUTTONS_HORIZONTAL_PADDING,
                 ),
+                child: Buttons(),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -28,8 +28,8 @@ class ButtonsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var points = getPoints(size);
-    var pointsMap = points.asMap();
+    var centralPoints = getPoints(size);
+    var pointsMap = centralPoints.asMap();
     var hexagonButtonMap = pointsMap.map(
       (index, e) {
         final isSelected = used.contains(index);
@@ -52,15 +52,9 @@ class ButtonsPainter extends CustomPainter {
       },
     );
 
-    hexagonButtonMap.forEach(
-      (key, value) {
-        value.paint(canvas, size);
-      },
-    );
-
     for (int i = 0; i < used.length - 1; ++i) {
-      var p1 = points[used[i]];
-      var p2 = points[used[i + 1]];
+      var p1 = centralPoints[used[i]];
+      var p2 = centralPoints[used[i + 1]];
 
       var p1Offsets = hexagonButtonMap[used[i]].getOffsets();
       var p2Offsets = hexagonButtonMap[used[i + 1]].getOffsets();
@@ -72,20 +66,43 @@ class ButtonsPainter extends CustomPainter {
       );
     }
 
+    hexagonButtonMap.forEach(
+      (key, value) {
+        value.paint(canvas, size);
+      },
+    );
+
     if (used.isNotEmpty && currentPoint != null && used.length < buttonCount) {
-      var lastItemIndex = used[used.length - 1];
+      return;
+      bool isOutsideOfAnyButton = true;
 
-      var p1 = getStartOffset(
-        points[lastItemIndex],
-        currentPoint,
-        hexagonButtonMap[lastItemIndex].getOffsets(),
+      Offset fixedCurrentPoint;
+
+      if (currentPoint.dx < 0 || currentPoint.dy < 0) {}
+
+      centralPoints.forEach(
+        (e) {
+          var distance = (fixedCurrentPoint - e).distance;
+
+          isOutsideOfAnyButton = isOutsideOfAnyButton && distance > buttonSize;
+        },
       );
 
-      canvas.drawLine(
-        p1,
-        currentPoint,
-        selectedPaint,
-      );
+      if (isOutsideOfAnyButton) {
+        var lastItemIndex = used[used.length - 1];
+
+        var p1 = getStartOffset(
+          centralPoints[lastItemIndex],
+          fixedCurrentPoint,
+          hexagonButtonMap[lastItemIndex].getOffsets(),
+        );
+
+        canvas.drawLine(
+          p1,
+          fixedCurrentPoint,
+          selectedPaint,
+        );
+      }
     }
   }
 
