@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {
                     PageNavigator.of(context).push(
                       route: Routes.Game,
-                      animation: RouteAnimation.SCALE,
+                      animation: RouteAnimation.BASE,
                     );
                   },
                   child: Text("Go to Game"),
@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {
                     PageNavigator.of(context).push(
                       route: Routes.Settings,
-                      animation: RouteAnimation.SCALE,
+                      animation: RouteAnimation.BASE,
                     );
                   },
                   child: Text("Go to Settings"),

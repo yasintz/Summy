@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:summy/constants/game_constants.dart';
+import 'dart:math' as Math;
 
 typedef DoubleUpdater = double Function(double x);
 
@@ -12,6 +11,7 @@ class HexagonButton {
   final String char;
   final Color color;
   final Color textColor;
+  final Color backgroundColor;
   List<Offset> _offsets;
 
   HexagonButton({
@@ -22,22 +22,34 @@ class HexagonButton {
     @required this.char,
     @required this.color,
     @required this.textColor,
+    @required this.backgroundColor,
   });
 
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
+    List<Offset> offsets = getOffsets();
+    Map<int, Offset> offsetMap = offsets.asMap();
+
+    Paint borderPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round
       ..strokeWidth = strokeWidth;
 
+    Paint backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 0;
+
     TextPainter textPainter = _getTextPainter();
-    Path path = _getHexagonButtonPath();
+    Path borderPath = _getHexagonButtonBorderPath(offsetMap);
+    Path backgroundPath = _getHexagonButtonBackgroundPath(offsetMap);
 
     textPainter.layout(
       minWidth: 0,
       maxWidth: size.width,
     );
+
+    canvas.drawPath(backgroundPath, backgroundPaint);
 
     textPainter.paint(
       canvas,
@@ -48,13 +60,14 @@ class HexagonButton {
       ),
     );
 
-    canvas.drawPath(path, paint);
+    canvas.drawPath(borderPath, borderPaint);
   }
 
   TextPainter _getTextPainter() {
     TextStyle textStyle = TextStyle(
       color: textColor,
-      fontSize: 32,
+      fontSize: 28,
+      fontWeight: FontWeight.bold,
     );
 
     TextSpan textSpan = TextSpan(
@@ -69,12 +82,13 @@ class HexagonButton {
     return textPainter;
   }
 
+  // TODO: implement scale
   List<Offset> getOffsets() {
+    var rootThree = Math.sqrt(3);
     if (_offsets == null) {
       List<Offset> points = List<Offset>();
       double sl = sideLength - (strokeWidth / 2);
-      Offset defaultCentralPoint =
-          Offset(sl * GAME_CONSTANTS.ROOT_THREE / 2, sl);
+      Offset defaultCentralPoint = Offset(sl * rootThree / 2, sl);
       double centralPointXDiff = centralPoint.dx - defaultCentralPoint.dx;
       double centralPointYDiff = centralPoint.dy - defaultCentralPoint.dy;
 
@@ -83,10 +97,10 @@ class HexagonButton {
 
       List<Offset> offsets = [
         Offset(0, sl / 2),
-        Offset(sl * GAME_CONSTANTS.ROOT_THREE / 2, 0),
-        Offset(sl * GAME_CONSTANTS.ROOT_THREE, sl / 2),
-        Offset(sl * GAME_CONSTANTS.ROOT_THREE, 3 * sl / 2),
-        Offset(sl * GAME_CONSTANTS.ROOT_THREE / 2, 2 * sl),
+        Offset(sl * rootThree / 2, 0),
+        Offset(sl * rootThree, sl / 2),
+        Offset(sl * rootThree, 3 * sl / 2),
+        Offset(sl * rootThree / 2, 2 * sl),
         Offset(0, 3 * sl / 2)
       ];
 
@@ -102,40 +116,62 @@ class HexagonButton {
     return _offsets;
   }
 
-  Path _getHexagonButtonPath() {
-    // image: https://image.prntscr.com/image/lh7LI-xlSAmKzR_K87bzUw.png
-    Path path = Path();
-
-    List<Offset> points = getOffsets();
+  List<Offset> _getCentralOffsets(Map<int, Offset> pointsMap) {
     List<Offset> centeralPoints = List<Offset>();
 
-    points.asMap()
-      ..forEach((index, value) {
-        bool isLastPoint = index == points.length - 1;
+    pointsMap.forEach((index, value) {
+      bool isLastPoint = index == pointsMap.length - 1;
 
-        Offset nextItem = points[isLastPoint ? 0 : index + 1];
+      Offset nextItem = pointsMap[isLastPoint ? 0 : index + 1];
 
-        double x = (value.dx + nextItem.dx) / 2;
-        double y = (value.dy + nextItem.dy) / 2;
+      double x = (value.dx + nextItem.dx) / 2;
+      double y = (value.dy + nextItem.dy) / 2;
 
-        centeralPoints.add(Offset(x, y));
-      });
+      centeralPoints.add(Offset(x, y));
+    });
+    return centeralPoints;
+  }
+
+  Path _getHexagonButtonBorderPath(Map<int, Offset> pointsMap) {
+    // image: https://image.prntscr.com/image/lh7LI-xlSAmKzR_K87bzUw.png
+    Path borderPath = Path();
+
+    List<Offset> centeralPoints = _getCentralOffsets(pointsMap);
 
     Offset cp1 = centeralPoints[0];
-    Offset point1 = points[0];
+    Offset point1 = pointsMap[0];
 
-    path.moveTo(cp1.dx, cp1.dy); // 1a
-
-    points.asMap().forEach((index, value) {
+    pointsMap.forEach((index, value) {
       Offset cp = centeralPoints[index];
 
-      if (index != 0) {
-        path.conicTo(value.dx, value.dy, cp.dx, cp.dy, radius);
+      if (index == 0) {
+        borderPath.moveTo(cp1.dx, cp1.dy);
+      } else {
+        borderPath.conicTo(value.dx, value.dy, cp.dx, cp.dy, radius);
+      }
+      if (index == pointsMap.length - 1) {
+        borderPath.conicTo(point1.dx, point1.dy, cp1.dx, cp1.dy, radius);
       }
     });
 
-    path.conicTo(point1.dx, point1.dy, cp1.dx, cp1.dy, radius);
+    return borderPath;
+  }
 
-    return path;
+  Path _getHexagonButtonBackgroundPath(Map<int, Offset> pointsMap) {
+    Path backgroundPath = Path();
+    Offset point1 = pointsMap[0];
+
+    pointsMap.forEach((index, value) {
+      if (index == 0) {
+        backgroundPath.moveTo(point1.dx, point1.dy);
+      } else {
+        backgroundPath.lineTo(value.dx, value.dy);
+      }
+      if (index == pointsMap.length - 1) {
+        backgroundPath.lineTo(point1.dx, point1.dy);
+      }
+    });
+
+    return backgroundPath;
   }
 }

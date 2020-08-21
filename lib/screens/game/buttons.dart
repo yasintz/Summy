@@ -1,10 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:summy/components/buttons_painter.dart';
+import 'package:summy/screens/game/buttons_painter.dart';
 import 'package:summy/constants/game_constants.dart';
 
+typedef void OnStop(List<String> used);
+
 class Buttons extends StatefulWidget {
+  final List<String> items;
+  final OnStop onStop;
+
   const Buttons({
     Key key,
+    @required this.items,
+    @required this.onStop,
   }) : super(key: key);
 
   @override
@@ -12,29 +21,41 @@ class Buttons extends StatefulWidget {
 }
 
 class _ButtonsState extends State<Buttons> {
+  bool isInitialize = false;
   List<int> used = [];
   Offset currentPoint;
 
   @override
+  void initState() {
+    super.initState();
+
+    Timer(Duration(milliseconds: 150), () {
+      setState(() {
+        isInitialize = true;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: CustomPaint(
+    Widget child = SizedBox.shrink();
+    if (isInitialize) {
+      child = CustomPaint(
         painter: ButtonsPainter(
           currentPoint: currentPoint,
-          buttonSize: GAME_CONSTANTS.HEXAGON_BUTTON_SIZE,
-          items: [
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-          ],
+          buttonSize: GameConstants.HEXAGON_BUTTON_SIZE,
+          items: widget.items,
           used: used,
         ),
         size: Size.infinite,
+      );
+    }
+
+    return GestureDetector(
+      child: AnimatedOpacity(
+        opacity: isInitialize ? 1 : 0,
+        duration: Duration(milliseconds: 500),
+        child: child,
       ),
       onPanUpdate: (DragUpdateDetails details) {
         handleUsed(details.globalPosition);
@@ -48,7 +69,10 @@ class _ButtonsState extends State<Buttons> {
   }
 
   void onEnd(_) {
-    print(used);
+    if (used.length > 0) {
+      widget.onStop(used.map((e) => widget.items[e]).toList());
+    }
+
     setState(() {
       currentPoint = null;
       used = [];
@@ -68,8 +92,8 @@ class _ButtonsState extends State<Buttons> {
         final distance = (element - localPosition).distance;
 
         final isSelected = distance <
-            GAME_CONSTANTS.HEXAGON_BUTTON_SIZE +
-                GAME_CONSTANTS.BUTTON_STROKE_WIDTH;
+            GameConstants.HEXAGON_BUTTON_SIZE +
+                GameConstants.BUTTON_STROKE_WIDTH;
 
         if (!used.contains(index) && isSelected) {
           used.add(index);
