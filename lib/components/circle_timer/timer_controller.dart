@@ -40,6 +40,8 @@ class TimerController {
   bool _isStarted = false;
   bool _isPaused = false;
 
+  bool get isStarted => _isStarted;
+
   TimerController({
     @required this.animationDuration,
     @required this.color,
@@ -107,12 +109,12 @@ class TimerController {
   }
 
   void restart() {
-    if (!_isStarted || !_isPaused) {
+    if (!_isStarted) {
       return;
     }
 
     _isPaused = false;
-    _runCallback(TimerControllerCallbackType.RESUME);
+    _runCallback(TimerControllerCallbackType.RESTART);
   }
 
   void resume() {

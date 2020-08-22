@@ -64,7 +64,22 @@ function getResponse(sayilar = [], islemler = [], resultCorrect) {
     });
   });
 
-  return groupBy(response, 'result', ({ combination }) => combination);
+  var groupedItems = groupBy(
+    response,
+    'result',
+    ({ combination }) => combination
+  );
+
+  var arr = [];
+
+  Object.keys(groupedItems).forEach((key) => {
+    const value = groupedItems[key];
+    arr.push({
+      value: parseInt(key, 10),
+      combinations: value,
+    });
+  });
+  return arr;
 }
 
 var sayi = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -90,16 +105,16 @@ function getAll() {
                   return;
                 }
 
-                const result = getResponse(
+                const results = getResponse(
                   numbers,
                   ['+', '-', '*', '/'],
                   (r) => r > 20
                 );
 
-                if (Object.keys(result).length > 0) {
+                if (Object.keys(results).length > 0) {
                   response[key] = {
                     numbers,
-                    result,
+                    results,
                   };
                 }
               },
@@ -133,7 +148,11 @@ const path = require('path');
 getAllAsync().then((response) => {
   var str = JSON.stringify(Object.values(response));
 
-  fs.writeFileSync(path.join(process.cwd(), '__xyz__.json'), str);
+  fs.writeFileSync(
+    path.join(process.cwd(), '__xyz__.json'),
+    JSON.stringify(Object.values(response).slice(0, 2))
+  );
+
   fs.writeFileSync(
     path.join(process.cwd(), 'lib/data', 'combination_json_string.dart'),
     dartBuilder(str)

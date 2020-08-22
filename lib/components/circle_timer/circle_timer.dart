@@ -68,6 +68,11 @@ class _CircleTimerState extends State<CircleTimer>
       progressController.forward();
     });
 
+    widget.controller.addEventListener(TimerControllerCallbackType.RESTART, () {
+      widget.controller.stop();
+      widget.controller.start();
+    });
+
     widget.controller.addEventListener(TimerControllerCallbackType.PAUSE, () {
       progressController.stop();
     });
@@ -79,6 +84,10 @@ class _CircleTimerState extends State<CircleTimer>
     widget.controller.addEventListener(TimerControllerCallbackType.STOP, () {
       progressController.reset();
     });
+
+    if (widget.controller.isStarted) {
+      progressController.forward();
+    }
   }
 
   @override

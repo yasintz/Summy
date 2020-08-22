@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:summy/cache.dart';
 import 'dart:math' as Math;
 import 'package:summy/components/hexagon_button.dart';
 
@@ -29,34 +28,28 @@ class ButtonsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var centralPoints =
-        Cache.handleCache("${size.width}${size.height}", () => getPoints(size));
+    var centralPoints = getPoints(size);
 
-    var pointsMap = Cache.handleCache(
-        "${centralPoints.hashCode}", () => centralPoints.asMap());
+    var pointsMap = centralPoints.asMap();
 
-    var hexagonButtonMap = Cache.handleCache(
-      "${pointsMap.hashCode}${used.toString()}",
-      () => pointsMap.map(
-        (index, e) {
-          final isSelected = used.contains(index);
-          return MapEntry(
-            index,
-            HexagonButton(
-              centralPoint: e,
-              sideLength: buttonSize,
-              strokeWidth:
-                  GameConstants.BUTTON_STROKE_WIDTH + (isSelected ? 1 : 0),
-              radius: GameConstants.BUTTON_RADIUS,
-              char: items[index],
-              backgroundColor: Colors.white,
-              color: isSelected ? GameConstants.PURPLE : GameConstants.GREY,
-              textColor:
-                  isSelected ? GameConstants.PURPLE : GameConstants.BROWN,
-            ),
-          );
-        },
-      ),
+    var hexagonButtonMap = pointsMap.map(
+      (index, e) {
+        final isSelected = used.contains(index);
+        return MapEntry(
+          index,
+          HexagonButton(
+            centralPoint: e,
+            sideLength: buttonSize,
+            strokeWidth:
+                GameConstants.BUTTON_STROKE_WIDTH + (isSelected ? 1 : 0),
+            radius: GameConstants.BUTTON_RADIUS,
+            char: items[index],
+            backgroundColor: Colors.white,
+            color: isSelected ? GameConstants.PURPLE : GameConstants.GREY,
+            textColor: isSelected ? GameConstants.PURPLE : GameConstants.BROWN,
+          ),
+        );
+      },
     );
 
     for (int i = 0; i < used.length - 1; ++i) {

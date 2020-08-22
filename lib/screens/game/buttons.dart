@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:summy/screens/game/buttons_painter.dart';
 import 'package:summy/constants/game_constants.dart';
 
-typedef void OnStop(List<String> used);
+typedef void OnChange(List<String> used);
 
 class Buttons extends StatefulWidget {
   final List<String> items;
-  final OnStop onStop;
+  final OnChange onStop;
+  final OnChange onUpdate;
 
   const Buttons({
     Key key,
     @required this.items,
     @required this.onStop,
+    @required this.onUpdate,
   }) : super(key: key);
 
   @override
@@ -86,6 +88,7 @@ class _ButtonsState extends State<Buttons> {
 
     var points = ButtonsPainter.getPoints(referenceBox.size);
     setState(() {
+      bool hasAnyItemSelected = false;
       currentPoint = localPosition;
 
       points.asMap().forEach((index, element) {
@@ -96,9 +99,15 @@ class _ButtonsState extends State<Buttons> {
                 GameConstants.BUTTON_STROKE_WIDTH;
 
         if (!used.contains(index) && isSelected) {
+          hasAnyItemSelected = true;
+
           used.add(index);
         }
       });
+
+      if (hasAnyItemSelected) {
+        widget.onUpdate(used.map((e) => widget.items[e]).toList());
+      }
     });
   }
 }

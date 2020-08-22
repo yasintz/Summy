@@ -8,7 +8,6 @@
     "android": true,
     "ios": true,
     ".dart_tool": true,
-    "build": true,
-    "lib/data/combination_json_string.dart": true
+    "build": true
   }
 }
